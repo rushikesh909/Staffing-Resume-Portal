@@ -342,3 +342,25 @@ async def get_candidate_audit_logs(
         }
         for log in logs
     ]
+
+@router.delete("/{id}")
+async def delete_candidate(
+    id: str,
+    current_user: User = Depends(recruiter_only)
+):
+    candidate = None
+    try:
+        candidate = await Candidate.get(PydanticObjectId(id))
+    except Exception:
+        pass
+    if not candidate:
+        candidate = await Candidate.get(id)
+    if not candidate:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Candidate not found")
+
+    cand_id_str = str(candidate.id)
+    await Submission.find(Submission.candidate_id == cand_id_str).delete()
+    await AuditLog.find(AuditLog.candidate_id == cand_id_str).delete()
+    await candidate.delete()
+    return {"message": "Candidate and associated data deleted successfully"}
+

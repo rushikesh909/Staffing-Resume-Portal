@@ -20,8 +20,8 @@ COMMON_SKILLS = [
     # Data & AI
     "machine learning", "deep learning", "nlp", "llm", "pytorch", "tensorflow",
     "pandas", "numpy", "scikit-learn", "data science", "spark", "hadoop",
-    # Process & Methodologies
-    "agile", "scrum", "rest api", "unit testing", "system design"
+    # Process, Compliance & Methodologies
+    "agile", "scrum", "rest api", "unit testing", "system design", "kyc", "aml", "excel", "compliance"
 ]
 
 def extract_scorecard_from_jd(jd_text: str) -> List[ScorecardCriterion]:
@@ -116,7 +116,7 @@ def extract_scorecard_from_jd(jd_text: str) -> List[ScorecardCriterion]:
         if re.search(pattern, jd_lower):
             is_in_required = bool(re.search(pattern, req_lower)) if req_lower else False
             skill_name = skill.title() if len(skill) > 4 else skill.upper()
-            if skill in ["aws", "gcp", "sql", "k8s", "nlp", "llm", "css", "html"]:
+            if skill in ["aws", "gcp", "sql", "k8s", "nlp", "llm", "css", "html", "kyc", "aml"]:
                 skill_name = skill.upper()
             elif skill in ["react.js", "node.js", "next.js", "vue.js"]:
                 skill_name = skill.capitalize()

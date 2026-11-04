@@ -150,7 +150,7 @@ def extract_profile_and_blind_text(raw_text: str, filename: str = "") -> Tuple[D
     text_lower = raw_text.lower()
     for skill in COMMON_SKILLS:
         if re.search(rf'\b{re.escape(skill)}\b', text_lower):
-            skill_name = skill.upper() if skill in ["aws", "gcp", "sql", "k8s", "nlp", "llm", "css", "html"] else skill.title()
+            skill_name = skill.upper() if skill in ["aws", "gcp", "sql", "k8s", "nlp", "llm", "css", "html", "kyc", "aml"] else skill.title()
             if skill_name not in skills:
                 skills.append(skill_name)
 
