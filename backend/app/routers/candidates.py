@@ -2,6 +2,7 @@ import os
 from datetime import datetime
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form, Query
+from pydantic import BaseModel
 from beanie import PydanticObjectId
 from app.config import settings
 from app.models import Candidate, Requisition, Submission, AuditLog, ConsentRecord, PipelineStage, ClientDecision, User
@@ -250,3 +251,94 @@ async def get_candidate_profile(
         "created_at": candidate.created_at,
         "raw_text": candidate.raw_text,
     }
+
+class UpdateConsentRequest(BaseModel):
+    given: bool
+    purpose: Optional[str] = "hiring"
+
+@router.get("/{id}/consent")
+async def get_candidate_consent(
+    id: str,
+    current_user: User = Depends(recruiter_only)
+):
+    candidate = None
+    try:
+        candidate = await Candidate.get(PydanticObjectId(id))
+    except Exception:
+        pass
+    if not candidate:
+        candidate = await Candidate.get(id)
+    if not candidate:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Candidate not found")
+    return {
+        "candidate_id": str(candidate.id),
+        "consent": candidate.consent.model_dump(),
+    }
+
+@router.patch("/{id}/consent")
+async def update_candidate_consent(
+    id: str,
+    body: UpdateConsentRequest,
+    current_user: User = Depends(recruiter_only)
+):
+    candidate = None
+    try:
+        candidate = await Candidate.get(PydanticObjectId(id))
+    except Exception:
+        pass
+    if not candidate:
+        candidate = await Candidate.get(id)
+    if not candidate:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Candidate not found")
+
+    candidate.consent.given = body.given
+    candidate.consent.timestamp = datetime.utcnow()
+    if body.purpose:
+        candidate.consent.purpose = body.purpose
+    await candidate.save()
+
+    audit = AuditLog(
+        candidate_id=str(candidate.id),
+        viewer_user_id=str(current_user.id),
+        viewer_role=current_user.role.value,
+        action="consent_updated",
+        timestamp=datetime.utcnow()
+    )
+    await audit.insert()
+
+    return {
+        "candidate_id": str(candidate.id),
+        "consent": candidate.consent.model_dump(),
+    }
+
+@router.get("/{id}/audit-logs")
+async def get_candidate_audit_logs(
+    id: str,
+    current_user: User = Depends(recruiter_only)
+):
+    candidate = None
+    try:
+        candidate = await Candidate.get(PydanticObjectId(id))
+    except Exception:
+        pass
+    if not candidate:
+        candidate = await Candidate.get(id)
+    if not candidate:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Candidate not found")
+
+    logs = await AuditLog.find(
+        AuditLog.candidate_id == str(candidate.id)
+    ).sort("-timestamp").to_list()
+
+    return [
+        {
+            "id": str(log.id),
+            "candidate_id": log.candidate_id,
+            "viewer_user_id": log.viewer_user_id,
+            "viewer_role": log.viewer_role,
+            "requisition_id": log.requisition_id,
+            "action": log.action,
+            "timestamp": log.timestamp,
+        }
+        for log in logs
+    ]
