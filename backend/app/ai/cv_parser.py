@@ -27,6 +27,15 @@ def extract_text_from_pdf(file_bytes: bytes) -> str:
                 text = ocr_text
         except Exception:
             pass
+
+    # Fallback if binary is raw text stream
+    if len(text) < 10:
+        try:
+            decoded = file_bytes.decode("utf-8", errors="ignore").strip()
+            if len(decoded) > len(text):
+                text = decoded
+        except Exception:
+            pass
     return text
 
 def extract_text_from_docx(file_bytes: bytes) -> str:
