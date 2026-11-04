@@ -11,4 +11,29 @@ body {
   color: var(--foreground);
   background: #f8fafc;
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Smooth mobile touch scrolling */
+* {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Custom subtle scrollbars for horizontal boards and drawers */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
