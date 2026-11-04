@@ -111,8 +111,8 @@ def extract_scorecard_from_jd(jd_text: str) -> List[ScorecardCriterion]:
     req_lower = required_text.lower()
 
     for skill in COMMON_SKILLS:
-        # Word boundary search for accurate match (e.g. avoid 'c' matching in 'react')
-        pattern = rf'\b{re.escape(skill)}\b'
+        # Word boundary search with optional plural 's' (e.g. 'rest api' or 'rest apis')
+        pattern = rf'\b{re.escape(skill)}(?:s)?\b'
         if re.search(pattern, jd_lower):
             is_in_required = bool(re.search(pattern, req_lower)) if req_lower else False
             skill_name = skill.title() if len(skill) > 4 else skill.upper()

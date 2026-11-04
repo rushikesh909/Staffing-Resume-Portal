@@ -32,7 +32,7 @@ def score_candidate(candidate: Candidate, scorecard: List[ScorecardCriterion]) -
         quotes: List[str] = []
 
         if crit_type == "skill":
-            pattern = rf'\b{re.escape(name)}\b'
+            pattern = rf'\b{re.escape(name)}(?:s)?\b'
             quotes = _find_evidence_lines(blind_text, pattern)
             if quotes:
                 matched = True

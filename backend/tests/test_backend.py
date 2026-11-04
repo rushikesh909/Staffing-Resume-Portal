@@ -1,3 +1,4 @@
+import hashlib
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
@@ -9,7 +10,7 @@ from app.models import (
 )
 from app.auth import hash_password, verify_password, create_token
 from app.ai.jd_extractor import extract_scorecard_from_jd
-from app.ai.cv_parser import extract_profile_and_blind_text
+from app.ai.cv_parser import extract_profile_and_blind_text, extract_text_from_pdf
 from app.ai.scorer import score_candidate
 from app.main import app
 
@@ -235,3 +236,198 @@ async def test_full_api_workflow():
         pipe_res = await ac.get(f"/requisitions/{req_id}/pipeline", headers=rec_headers)
         assert pipe_res.status_code == 200
         assert pipe_res.json()["stages"]["interview"] == 1
+
+
+@pytest.mark.asyncio
+async def test_senior_java_jd_extraction():
+    jd = """
+    We are looking for a Senior Java Developer in Noida location.
+    Requirements:
+    - 5-8 years of experience in Java
+    - Deep knowledge of Spring Boot and microservices
+    - REST APIs design
+    - Notice period up to 60 days
+    - CTC 18-25 LPA
+    """
+    scorecard = extract_scorecard_from_jd(jd)
+    names = [c.name.lower() for c in scorecard]
+    assert any("experience" in n for n in names)
+    assert any("java" in n for n in names)
+    assert any("spring boot" in n for n in names)
+    assert any("microservices" in n for n in names)
+    assert any("rest api" in n for n in names)
+    assert any("notice" in n for n in names)
+    assert any("ctc" in n for n in names)
+
+
+@pytest.mark.asyncio
+async def test_client_cannot_access_other_client_submission():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        # Create two clients
+        client_a = Client(name="Client A", contact_email="a@test.com")
+        await client_a.insert()
+        client_b = Client(name="Client B", contact_email="b@test.com")
+        await client_b.insert()
+
+        # Create two hiring managers
+        user_a = User(
+            email="hiring@clienta.com",
+            hashed_password=hash_password("pw123"),
+            full_name="Manager A",
+            role=UserRole.client_hiring_manager,
+            client_id=str(client_a.id)
+        )
+        await user_a.insert()
+
+        user_b = User(
+            email="hiring@clientb.com",
+            hashed_password=hash_password("pw123"),
+            full_name="Manager B",
+            role=UserRole.client_hiring_manager,
+            client_id=str(client_b.id)
+        )
+        await user_b.insert()
+
+        # Create requisition and candidate for client B
+        req_b = Requisition(
+            title="Java Dev B",
+            client_id=str(client_b.id),
+            jd_text="Requirements: 3 years experience Java",
+            created_by=str(user_b.id)
+        )
+        await req_b.insert()
+
+        cand_b = Candidate(
+            full_name="Candidate B",
+            email="b_cand@test.com",
+            phone="9876543210",
+            raw_text="Candidate B CV text...",
+            blind_text="[Candidate] CV text...",
+            fingerprint="fp_b_test"
+        )
+        await cand_b.insert()
+
+        sub_b = Submission(
+            requisition_id=str(req_b.id),
+            candidate_id=str(cand_b.id),
+            client_id=str(client_b.id),
+            ai_score=85.0
+        )
+        await sub_b.insert()
+
+        # Log in as Client A
+        login_res = await ac.post("/auth/login", json={"email": "hiring@clienta.com", "password": "pw123"})
+        token_a = login_res.json()["access_token"]
+        headers_a = {"Authorization": f"Bearer {token_a}"}
+
+        # Try to access Client B's submission via /client/submissions/{id} -> 404
+        scoped_res = await ac.get(f"/client/submissions/{sub_b.id}", headers=headers_a)
+        assert scoped_res.status_code == 404
+
+        # Try to access via general /submissions/{id} -> 404 (not 403, preventing ID leakage)
+        general_res = await ac.get(f"/submissions/{sub_b.id}", headers=headers_a)
+        assert general_res.status_code == 404
+
+        # Try to access Client B's requisition submissions -> 404
+        list_res = await ac.get(f"/client/requisitions/{req_b.id}/submissions", headers=headers_a)
+        assert list_res.status_code == 404
+
+
+def test_fingerprint_uniqueness():
+    email = "test.candidate@example.com"
+    phone = "+91 9876543210"
+    phone_digits = "".join(filter(str.isdigit, phone))[-10:]
+
+    fp1 = hashlib.sha256(f"{email.lower().strip()}:{phone_digits}".encode()).hexdigest()
+    # Same details with differing whitespace and case
+    email2 = " TEST.Candidate@Example.com "
+    fp2 = hashlib.sha256(f"{email2.lower().strip()}:{phone_digits}".encode()).hexdigest()
+    assert fp1 == fp2
+
+    # Different email produces different fingerprint
+    fp3 = hashlib.sha256(f"other@example.com:{phone_digits}".encode()).hexdigest()
+    assert fp1 != fp3
+
+
+def test_required_criterion_caps_not_rejects():
+    criteria = [
+        ScorecardCriterion(name="Java", type="skill", weight=1.0, required=True),
+        ScorecardCriterion(name="Python", type="skill", weight=1.0, required=False),
+    ]
+    # Candidate lacks Java (score=0 on required criterion)
+    cand = Candidate(
+        full_name="Python Specialist",
+        skills=["Python"],
+        raw_text="Built machine learning systems in Python.",
+        blind_text="Built machine learning systems in Python.",
+        fingerprint="fp_py_only"
+    )
+    evidences, score = score_candidate(cand, criteria)
+    # Candidate must NOT be excluded or given 0; score is capped at 60.0 but > 0
+    assert 0.0 < score <= 60.0
+    assert len(evidences) == 2
+
+
+def test_malformed_cv_graceful_failure():
+    # 1. Empty bytes
+    extracted = extract_text_from_pdf(b"")
+    assert extracted == ""
+
+    # 2. Extract profile from empty text returns an error string, does not crash
+    profile, blind_text, err = extract_profile_and_blind_text("", "corrupt.pdf")
+    assert err is not None
+    assert "sufficient text" in err
+    assert profile == {}
+
+
+@pytest.mark.asyncio
+async def test_candidate_deletion_dpdp():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        recruiter = User(
+            email="rec_del@test.com",
+            hashed_password=hash_password("pw123"),
+            full_name="Recruiter Delete",
+            role=UserRole.recruiter
+        )
+        await recruiter.insert()
+
+        rec_token = create_token(str(recruiter.id), UserRole.recruiter.value)
+        headers = {"Authorization": f"Bearer {rec_token}"}
+
+        cand = Candidate(
+            full_name="Delete Candidate",
+            email="delete.me@test.com",
+            phone="9876543219",
+            raw_text="To be deleted candidate text.",
+            blind_text="[Candidate] text.",
+            fingerprint="fp_del_test"
+        )
+        await cand.insert()
+
+        sub = Submission(
+            requisition_id="dummy_req",
+            candidate_id=str(cand.id),
+            client_id="dummy_client",
+            ai_score=75.0
+        )
+        await sub.insert()
+
+        audit = AuditLog(
+            candidate_id=str(cand.id),
+            viewer_user_id=str(recruiter.id),
+            viewer_role="recruiter",
+            action="viewed"
+        )
+        await audit.insert()
+
+        # Delete candidate
+        del_res = await ac.delete(f"/candidates/{cand.id}", headers=headers)
+        assert del_res.status_code == 200
+
+        # Verify candidate, submissions, and audit logs are purged
+        assert await Candidate.get(cand.id) is None
+        assert await Submission.find_one(Submission.candidate_id == str(cand.id)) is None
+        assert await AuditLog.find_one(AuditLog.candidate_id == str(cand.id)) is None
+

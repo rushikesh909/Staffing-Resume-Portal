@@ -178,6 +178,14 @@ async def list_client_submissions(
         for s in submissions
     ]
 
+@client_router.get("/submissions/{id}")
+async def get_client_submission(
+    id: str,
+    current_user: User = Depends(client_only)
+):
+    sub = await get_client_scoped_submission(id, current_user)
+    return await _format_submission_with_candidate(sub, is_client=True)
+
 @client_router.patch("/submissions/{id}/decision")
 async def client_decision(
     id: str,
