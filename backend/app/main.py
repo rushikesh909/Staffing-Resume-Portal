@@ -7,6 +7,8 @@ from app.database import init_db
 from app.routers import auth as auth_router
 from app.routers import requisitions as requisitions_router
 from app.routers import candidates as candidates_router
+from app.routers import submissions as submissions_router
+from app.routers import pipeline as pipeline_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -33,6 +35,9 @@ app.add_middleware(
 app.include_router(auth_router.router)
 app.include_router(requisitions_router.router)
 app.include_router(candidates_router.router)
+app.include_router(submissions_router.router)
+app.include_router(submissions_router.client_router)
+app.include_router(pipeline_router.router)
 
 @app.get("/health")
 async def health():
