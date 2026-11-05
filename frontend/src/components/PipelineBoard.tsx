@@ -6,7 +6,7 @@ import { ScoreBadge, Badge } from "./ui/Badge";
 import { Clock, Briefcase, ChevronRight, User } from "lucide-react";
 
 interface PipelineCandidate {
-  submissionId: number;
+  submissionId: string | number;
   candidate: Candidate;
   stage: PipelineStage;
 }
@@ -14,17 +14,17 @@ interface PipelineCandidate {
 interface PipelineBoardProps {
   candidates: PipelineCandidate[];
   onSelectCandidate: (candidate: Candidate) => void;
-  onMoveStage: (submissionId: number, nextStage: PipelineStage) => void;
+  onMoveStage: (submissionId: string | number, nextStage: PipelineStage) => void;
   isUpdating?: boolean;
 }
 
 export const STAGES: { id: PipelineStage; label: string; color: string }[] = [
   { id: "sourced", label: "Sourced", color: "border-slate-300" },
   { id: "screened", label: "Screened", color: "border-blue-400" },
-  { id: "submitted_to_client", label: "Submitted to Client", color: "border-indigo-400" },
+  { id: "shortlisted", label: "Shortlisted", color: "border-indigo-400" },
   { id: "client_reviewed", label: "Client Reviewed", color: "border-amber-400" },
-  { id: "interview_scheduled", label: "Interview", color: "border-purple-400" },
-  { id: "offer_made", label: "Offer", color: "border-emerald-400" },
+  { id: "interview", label: "Interview", color: "border-purple-400" },
+  { id: "offer", label: "Offer", color: "border-emerald-400" },
   { id: "joined", label: "Joined", color: "border-green-600" },
 ];
 
@@ -37,9 +37,19 @@ export const PipelineBoard: React.FC<PipelineBoardProps> = ({
   return (
     <div className="flex gap-4 overflow-x-auto pb-6 pt-2 select-none min-h-[550px]">
       {STAGES.map((stageObj, stageIndex) => {
-        const stageCandidates = candidates.filter(
-          (c) => (c.stage || "sourced") === stageObj.id
-        );
+        const stageCandidates = candidates.filter((c) => {
+          const s = (c.stage || "sourced").toLowerCase();
+          if (stageObj.id === "shortlisted" || stageObj.id === "submitted_to_client") {
+            return s === "shortlisted" || s === "submitted_to_client";
+          }
+          if (stageObj.id === "interview" || stageObj.id === "interview_scheduled") {
+            return s === "interview" || s === "interview_scheduled";
+          }
+          if (stageObj.id === "offer" || stageObj.id === "offer_made") {
+            return s === "offer" || s === "offer_made";
+          }
+          return s === stageObj.id;
+        });
 
         const nextStage =
           stageIndex < STAGES.length - 1 ? STAGES[stageIndex + 1].id : null;
@@ -70,6 +80,7 @@ export const PipelineBoard: React.FC<PipelineBoardProps> = ({
               ) : (
                 stageCandidates.map((item) => {
                   const c = item.candidate;
+                  const candName = c.full_name || c.name || "Candidate";
                   return (
                     <div
                       key={item.submissionId}
@@ -79,7 +90,7 @@ export const PipelineBoard: React.FC<PipelineBoardProps> = ({
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
                           <h4 className="text-xs font-bold text-slate-900 group-hover:text-blue-600 transition truncate">
-                            {c.name}
+                            {candName}
                           </h4>
                           <p className="text-[11px] text-slate-500 truncate mt-0.5">
                             {c.current_role || "Role not specified"}

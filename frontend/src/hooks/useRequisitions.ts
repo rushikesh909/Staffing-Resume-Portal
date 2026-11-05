@@ -79,7 +79,7 @@ export function usePipelineSummary(requisitionId: number | string) {
 export function useUpdateStage(requisitionId?: number | string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ submissionId, stage }: { submissionId: number; stage: PipelineStage }) =>
+    mutationFn: ({ submissionId, stage }: { submissionId: string | number; stage: PipelineStage }) =>
       updateSubmissionStageApi(submissionId, stage),
     onSuccess: () => {
       if (requisitionId) {
@@ -93,7 +93,7 @@ export function useUpdateStage(requisitionId?: number | string) {
 export function useSubmitToClient(requisitionId?: number | string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (submissionId: number) => submitToClientApi(submissionId),
+    mutationFn: (submissionId: string | number) => submitToClientApi(submissionId),
     onSuccess: () => {
       if (requisitionId) {
         queryClient.invalidateQueries({ queryKey: ["ranked-candidates", String(requisitionId)] });
@@ -125,7 +125,7 @@ export function useSubmitClientDecision(requisitionId?: number | string) {
       submissionId,
       data,
     }: {
-      submissionId: number;
+      submissionId: string | number;
       data: { decision: ClientDecision; rejection_reason?: string; proposed_slot?: string };
     }) => submitClientDecisionApi(submissionId, data),
     onSuccess: () => {

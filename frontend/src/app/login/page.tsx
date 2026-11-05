@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { AlertCircle, Lock, Mail } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -20,6 +20,7 @@ export default function LoginPage() {
   const { login } = useAuth();
   const [authError, setAuthError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [rememberEmail, setRememberEmail] = useState(true);
 
   const {
     register,
@@ -34,22 +35,33 @@ export default function LoginPage() {
     },
   });
 
+  useEffect(() => {
+    try {
+      const savedEmail = localStorage.getItem("remembered_email");
+      if (savedEmail) {
+        setValue("email", savedEmail);
+        setRememberEmail(true);
+      }
+    } catch {
+      // Ignore local storage error in restricted modes
+    }
+  }, [setValue]);
+
   const onSubmit = async (data: LoginFormData) => {
     setAuthError(null);
     setSubmitting(true);
     try {
+      if (rememberEmail) {
+        localStorage.setItem("remembered_email", data.email);
+      } else {
+        localStorage.removeItem("remembered_email");
+      }
       await login(data);
     } catch (err: any) {
       setAuthError(err.message || "Invalid email or password");
     } finally {
       setSubmitting(false);
     }
-  };
-
-  const fillQuickDemo = (email: string) => {
-    setValue("email", email);
-    setValue("password", "password123");
-    setAuthError(null);
   };
 
   return (
@@ -78,13 +90,18 @@ export default function LoginPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            method="POST"
+            action="#"
+            className="space-y-4"
+          >
             <div>
               <Input
                 label="Work Email"
                 type="email"
-                placeholder="recruiter@staffing.com"
-                autoComplete="email"
+                placeholder="you@company.com"
+                autoComplete="username"
                 error={errors.email?.message}
                 {...register("email")}
               />
@@ -101,6 +118,18 @@ export default function LoginPage() {
               />
             </div>
 
+            <div className="flex items-center justify-between text-xs pt-1">
+              <label className="flex items-center gap-2 cursor-pointer text-slate-600 select-none">
+                <input
+                  type="checkbox"
+                  checked={rememberEmail}
+                  onChange={(e) => setRememberEmail(e.target.checked)}
+                  className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4"
+                />
+                <span>Remember my email</span>
+              </label>
+            </div>
+
             <div className="pt-2">
               <Button
                 type="submit"
@@ -113,36 +142,6 @@ export default function LoginPage() {
               </Button>
             </div>
           </form>
-
-          {/* Quick Demo Credentials */}
-          <div className="mt-6 pt-6 border-t border-slate-100">
-            <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2.5 text-center">
-              Quick Fill Demo Accounts
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => fillQuickDemo("recruiter@staffing.com")}
-                className="text-xs text-left p-2 rounded-lg border border-slate-200 hover:border-blue-400 hover:bg-blue-50/50 transition-colors"
-              >
-                <div className="font-medium text-slate-800">Recruiter</div>
-                <div className="text-[11px] text-slate-500 truncate">
-                  recruiter@staffing.com
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => fillQuickDemo("hiring@client.com")}
-                className="text-xs text-left p-2 rounded-lg border border-slate-200 hover:border-blue-400 hover:bg-blue-50/50 transition-colors"
-              >
-                <div className="font-medium text-slate-800">Client Manager</div>
-                <div className="text-[11px] text-slate-500 truncate">
-                  hiring@client.com
-                </div>
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     </div>

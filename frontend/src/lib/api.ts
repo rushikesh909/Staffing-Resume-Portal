@@ -55,7 +55,7 @@ export async function getRequisitionsApi(): Promise<Requisition[]> {
 
 export async function createRequisitionApi(payload: {
   title: string;
-  client_id: number;
+  client_id: string | number;
   jd_text: string;
 }): Promise<Requisition> {
   const { data } = await apiClient.post<Requisition>("/requisitions", payload);
@@ -135,19 +135,19 @@ export async function getPipelineSummaryApi(
 }
 
 export async function updateSubmissionStageApi(
-  submissionId: number,
+  submissionId: string | number,
   stage: PipelineStage
 ): Promise<any> {
   const { data } = await apiClient.patch(`/submissions/${submissionId}/stage`, { stage });
   return data;
 }
 
-export async function submitToClientApi(submissionId: number): Promise<any> {
+export async function submitToClientApi(submissionId: string | number): Promise<any> {
   const { data } = await apiClient.post(`/submissions/${submissionId}/submit-to-client`);
   return data;
 }
 
-export async function markCandidateViewedApi(candidateId: number): Promise<any> {
+export async function markCandidateViewedApi(candidateId: string | number): Promise<any> {
   try {
     const { data } = await apiClient.patch(`/candidates/${candidateId}/viewed`);
     return data;
@@ -173,7 +173,7 @@ export async function getClientSubmissionsApi(
 }
 
 export async function submitClientDecisionApi(
-  submissionId: number,
+  submissionId: string | number,
   payload: {
     decision: ClientDecision;
     rejection_reason?: string;

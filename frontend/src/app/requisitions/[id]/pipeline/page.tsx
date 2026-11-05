@@ -55,17 +55,24 @@ export default function PipelinePage() {
 
     return candidatesData.map((item: any) => {
       const candidate: Candidate = item.candidate || item;
+      const candName = candidate.full_name || candidate.name || "Candidate";
       const stage: PipelineStage =
-        item.submission?.pipeline_stage || candidate.pipeline_stage || "sourced";
-      const submissionId: number =
+        item.pipeline_stage ||
+        item.submission?.pipeline_stage ||
+        candidate.pipeline_stage ||
+        "sourced";
+      const submissionId: string | number =
         item.submission_id || item.submission?.id || candidate.id;
 
       return {
         submissionId,
         candidate: {
           ...candidate,
+          name: candName,
+          full_name: candName,
           ai_score: item.ai_score ?? candidate.ai_score,
           score_evidence: item.score_evidence ?? candidate.score_evidence,
+          criteria_scores: item.criteria_scores ?? (candidate as any).criteria_scores,
         },
         stage,
       };
@@ -73,12 +80,12 @@ export default function PipelinePage() {
   }, [candidatesData]);
 
   const handleMoveStage = async (
-    submissionId: number,
+    submissionId: string | number,
     nextStage: PipelineStage
   ) => {
     try {
       await updateStageMutation.mutateAsync({
-        submissionId,
+        submissionId: submissionId as any,
         stage: nextStage,
       });
       refetch();
@@ -88,7 +95,7 @@ export default function PipelinePage() {
   };
 
   return (
-    <AuthGuard allowedRoles={["recruiter"]}>
+    <AuthGuard allowedRoles={["recruiter", "delivery_head"]}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         {/* Breadcrumb navigation */}
         <div className="flex items-center gap-2 text-sm text-slate-500 mb-6">
@@ -231,7 +238,9 @@ export default function PipelinePage() {
               <div className="p-5 border-b border-slate-200 flex items-start justify-between bg-slate-50">
                 <div>
                   <h3 className="text-lg font-bold text-slate-900">
-                    {selectedCandidate.name}
+                    {selectedCandidate.full_name ||
+                      selectedCandidate.name ||
+                      "Candidate Profile"}
                   </h3>
                   <p className="text-xs text-slate-500 mt-0.5">
                     {selectedCandidate.current_role || "Role not specified"}

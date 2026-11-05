@@ -14,7 +14,7 @@ import { ArrowLeft, Sparkles, AlertCircle, Building2 } from "lucide-react";
 
 const requisitionSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
-  client_id: z.coerce.number().min(1, "Please select a client"),
+  client_id: z.union([z.string().min(1, "Please select a client"), z.number().min(1, "Please select a client")]),
   jd_text: z.string().min(20, "Job description should be at least 20 characters"),
 });
 
@@ -80,7 +80,7 @@ export default function NewRequisitionPage() {
   };
 
   return (
-    <AuthGuard allowedRoles={["recruiter"]}>
+    <AuthGuard allowedRoles={["recruiter", "delivery_head"]}>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         {/* Back navigation */}
         <div className="mb-6">

@@ -44,10 +44,19 @@ export default function ScorecardPage() {
   useEffect(() => {
     if (!requisition?.scorecard) return;
 
-    const raw = requisition.scorecard;
+    const raw: any = requisition.scorecard;
     let list: ScorecardCriterionItem[] = [];
 
-    if (Array.isArray(raw.criteria) && raw.criteria.length > 0) {
+    if (Array.isArray(raw) && raw.length > 0) {
+      list = raw.map((c: any, idx: number) => ({
+        id: c.id || `crit-${idx}`,
+        name: c.name || "",
+        type: c.type || "skill",
+        weight: typeof c.weight === "number" ? c.weight : 1.0,
+        required: Boolean(c.required),
+        value: c.value ?? null,
+      }));
+    } else if (Array.isArray(raw?.criteria) && raw.criteria.length > 0) {
       list = raw.criteria.map((c: any, idx: number) => ({
         id: c.id || `crit-${idx}`,
         name: c.name || "",
@@ -155,16 +164,16 @@ export default function ScorecardPage() {
     const expCriterion = criteria.find((c) => c.type === "experience");
     const noticeCriterion = criteria.find((c) => c.type === "notice");
 
-    const payload = {
-      ...requisition?.scorecard,
-      criteria,
-      skills: skills.length > 0 ? skills : requisition?.scorecard?.skills || [],
-      experience_min: expCriterion?.value ?? requisition?.scorecard?.experience_min ?? 3,
-      notice_days_max: noticeCriterion?.value ?? requisition?.scorecard?.notice_days_max ?? 60,
-    };
+    const rawScorecard = requisition?.scorecard as any;
+    const formattedCriteria = criteria.map((c) => ({
+      name: c.name,
+      type: c.type || "skill",
+      weight: typeof c.weight === "number" ? c.weight : 1.0,
+      required: Boolean(c.required),
+    }));
 
     try {
-      await updateMutation.mutateAsync(payload);
+      await updateMutation.mutateAsync(formattedCriteria);
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 4000);
     } catch (err: any) {
@@ -175,7 +184,7 @@ export default function ScorecardPage() {
   };
 
   return (
-    <AuthGuard allowedRoles={["recruiter"]}>
+    <AuthGuard allowedRoles={["recruiter", "delivery_head"]}>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         {/* Breadcrumb navigation */}
         <div className="flex items-center gap-2 text-sm text-slate-500 mb-6">

@@ -22,7 +22,7 @@ interface CandidateCardProps {
   mode?: "recruiter" | "client";
   isViewed?: boolean;
   isSubmitted?: boolean;
-  submissionId?: number;
+  submissionId?: string | number;
   onViewDetails?: () => void;
   onSubmitToClient?: () => void;
   isSubmitting?: boolean;
@@ -42,14 +42,18 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({
   const isClient = mode === "client";
   const stage = candidate.pipeline_stage || "sourced";
   const decision = candidate.client_decision;
+  const displayName = candidate.full_name || candidate.name || "Candidate";
 
   const getStageBadge = (stg: string) => {
     const formatted = stg.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
     switch (stg) {
       case "joined":
+      case "offer":
       case "offer_made":
         return <Badge variant="success" size="sm">{formatted}</Badge>;
+      case "interview":
       case "interview_scheduled":
+      case "shortlisted":
       case "submitted_to_client":
         return <Badge variant="info" size="sm">{formatted}</Badge>;
       case "client_reviewed":
@@ -87,7 +91,13 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({
     }
   };
 
-  const canShowContacts = !isClient || stage === "interview_scheduled" || stage === "offer_made" || stage === "joined";
+  const canShowContacts =
+    !isClient ||
+    stage === "interview" ||
+    stage === "interview_scheduled" ||
+    stage === "offer" ||
+    stage === "offer_made" ||
+    stage === "joined";
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 hover:shadow-md transition flex flex-col justify-between">
@@ -96,7 +106,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h3 className="text-base font-bold text-slate-900 truncate flex items-center gap-2">
-              <span>{candidate.name}</span>
+              <span>{displayName}</span>
               {isSubmitted && !isClient && (
                 <Badge variant="info" size="sm">
                   Client Review
@@ -152,6 +162,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({
           <ScoreCard
             score={candidate.ai_score}
             evidence={candidate.score_evidence}
+            criteriaScores={(candidate as any).criteria_scores}
             maxSnippets={2}
           />
         </div>

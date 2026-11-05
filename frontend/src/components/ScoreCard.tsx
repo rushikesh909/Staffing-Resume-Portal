@@ -5,19 +5,39 @@ import { Quote } from "lucide-react";
 
 interface ScoreCardProps {
   score?: number | null;
-  evidence?: CandidateScoreEvidence | null;
+  evidence?: CandidateScoreEvidence | any[] | null;
+  criteriaScores?: any[] | null;
   maxSnippets?: number;
 }
 
 export const ScoreCard: React.FC<ScoreCardProps> = ({
   score,
   evidence,
+  criteriaScores,
   maxSnippets = 2,
 }) => {
   // Extract evidence snippets
   const snippets: { criterion: string; quote: string }[] = [];
 
-  if (evidence && typeof evidence === "object") {
+  // 1. If criteriaScores array is provided (from backend criteria_scores)
+  const listToInspect = Array.isArray(criteriaScores)
+    ? criteriaScores
+    : Array.isArray(evidence)
+    ? evidence
+    : null;
+
+  if (listToInspect) {
+    listToInspect.forEach((item: any) => {
+      if (!item) return;
+      const criterion = item.criterion_name || item.name || "Criterion";
+      const quotes = item.evidence_quotes || item.evidence_lines || [];
+      if (Array.isArray(quotes) && quotes.length > 0) {
+        snippets.push({ criterion, quote: quotes[0] });
+      } else if (typeof quotes === "string" && quotes) {
+        snippets.push({ criterion, quote: quotes });
+      }
+    });
+  } else if (evidence && typeof evidence === "object") {
     Object.entries(evidence).forEach(([criterion, data]) => {
       if (!data) return;
       if (typeof data === "string") {
@@ -25,6 +45,10 @@ export const ScoreCard: React.FC<ScoreCardProps> = ({
       } else if (typeof data === "object") {
         if (Array.isArray(data.evidence_lines)) {
           data.evidence_lines.forEach((line: string) => {
+            if (line) snippets.push({ criterion, quote: line });
+          });
+        } else if (Array.isArray(data.evidence_quotes)) {
+          data.evidence_quotes.forEach((line: string) => {
             if (line) snippets.push({ criterion, quote: line });
           });
         } else if (typeof data.evidence_lines === "string") {

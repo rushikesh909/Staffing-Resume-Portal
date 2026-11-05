@@ -58,43 +58,73 @@ export default function RankedCandidatesPage() {
   const [selectedItem, setSelectedItem] = useState<RankedItem | null>(null);
 
   // Local viewed and submitted overrides
-  const [viewedCandidateIds, setViewedCandidateIds] = useState<Set<number>>(
+  const [viewedCandidateIds, setViewedCandidateIds] = useState<Set<string | number>>(
     new Set()
   );
-  const [submittedIds, setSubmittedIds] = useState<Set<number>>(new Set());
+  const [submittedIds, setSubmittedIds] = useState<Set<string | number>>(new Set());
 
   // Normalize ranked list items
   const candidatesList = useMemo(() => {
     if (!rankedData || !Array.isArray(rankedData)) return [];
 
     return rankedData.map((item: any, idx: number): RankedItem => {
-      // Backend may return CandidateOut directly or RankedItem {candidate, submission, ...}
-      if (item.candidate) {
-        return {
-          id: item.candidate.id,
-          submission_id: item.submission?.id ?? item.id ?? item.candidate.id,
-          submission: item.submission,
-          candidate: item.candidate,
-          ai_score: item.ai_score ?? item.candidate.ai_score ?? 0,
-          score_evidence: item.score_evidence ?? item.candidate.score_evidence,
-          criteria_scores: item.criteria_scores,
-        };
-      } else {
-        return {
-          id: item.id,
-          submission_id: item.id,
-          candidate: item as Candidate,
-          ai_score: item.ai_score ?? 0,
-          score_evidence: item.score_evidence,
-          submission: {
-            id: item.id,
-            pipeline_stage: item.pipeline_stage || "sourced",
-            submitted_to_client: Boolean(item.submitted_to_client),
-            viewed_by_recruiter: Boolean(item.viewed_by_recruiter),
-            client_decision: item.client_decision,
-          },
-        };
-      }
+      const cand = item.candidate || item;
+      const candName = cand.full_name || cand.name || `Candidate #${idx + 1}`;
+      const stage =
+        item.pipeline_stage ||
+        item.submission?.pipeline_stage ||
+        cand.pipeline_stage ||
+        "sourced";
+      const subId =
+        item.submission_id ||
+        item.submission?.id ||
+        item.id ||
+        cand.id ||
+        `sub-${idx}`;
+
+      const normalizedCandidate: Candidate = {
+        ...cand,
+        id: cand.id || subId,
+        name: candName,
+        full_name: candName,
+        ai_score: item.ai_score ?? cand.ai_score ?? 0,
+        criteria_scores: item.criteria_scores ?? cand.criteria_scores,
+        score_evidence: item.score_evidence ?? cand.score_evidence,
+        pipeline_stage: stage,
+        submitted_to_client: Boolean(
+          item.submitted_to_client ||
+            item.submission?.submitted_to_client ||
+            stage === "client_reviewed" ||
+            stage === "interview" ||
+            stage === "offer" ||
+            stage === "joined"
+        ),
+        viewed_by_recruiter: Boolean(
+          item.recruiter_viewed ||
+            item.submission?.recruiter_viewed ||
+            item.viewed_by_recruiter
+        ),
+        client_decision:
+          item.client_decision ||
+          item.submission?.client_decision ||
+          cand.client_decision,
+      };
+
+      return {
+        id: normalizedCandidate.id,
+        submission_id: subId,
+        candidate: normalizedCandidate,
+        ai_score: item.ai_score ?? normalizedCandidate.ai_score ?? 0,
+        score_evidence: item.score_evidence ?? normalizedCandidate.score_evidence,
+        criteria_scores: item.criteria_scores ?? normalizedCandidate.criteria_scores,
+        submission: {
+          id: subId,
+          pipeline_stage: stage,
+          submitted_to_client: Boolean(normalizedCandidate.submitted_to_client),
+          viewed_by_recruiter: Boolean(normalizedCandidate.viewed_by_recruiter),
+          client_decision: normalizedCandidate.client_decision as string,
+        },
+      };
     });
   }, [rankedData]);
 
@@ -102,7 +132,7 @@ export default function RankedCandidatesPage() {
   const handleOpenDetails = async (item: RankedItem) => {
     setSelectedItem(item);
     const candidateId = item.candidate.id;
-    setViewedCandidateIds((prev) => new Set(prev).add(candidateId));
+    setViewedCandidateIds((prev) => new Set(prev).add(candidateId as any));
 
     try {
       await markCandidateViewedApi(candidateId);
@@ -115,7 +145,7 @@ export default function RankedCandidatesPage() {
     const submissionId = item.submission_id || item.submission?.id || item.candidate.id;
     try {
       await submitMutation.mutateAsync(submissionId);
-      setSubmittedIds((prev) => new Set(prev).add(submissionId));
+      setSubmittedIds((prev) => new Set(prev).add(submissionId as any));
     } catch (err: any) {
       alert(err.response?.data?.detail || err.message || "Failed to submit candidate to client");
     }
@@ -126,10 +156,10 @@ export default function RankedCandidatesPage() {
     return candidatesList
       .filter((item) => {
         const c = item.candidate;
-        const matchesSearch =
-          c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (c.current_role &&
-            c.current_role.toLowerCase().includes(searchQuery.toLowerCase()));
+        const nameStr = (c.full_name || c.name || "").toLowerCase();
+        const roleStr = (c.current_role || "").toLowerCase();
+        const q = searchQuery.toLowerCase();
+        const matchesSearch = !q || nameStr.includes(q) || roleStr.includes(q);
 
         const currentStage = item.submission?.pipeline_stage || c.pipeline_stage || "sourced";
         const matchesStage = stageFilter === "all" || currentStage === stageFilter;
@@ -144,7 +174,7 @@ export default function RankedCandidatesPage() {
   }, [candidatesList, searchQuery, stageFilter]);
 
   return (
-    <AuthGuard allowedRoles={["recruiter"]}>
+    <AuthGuard allowedRoles={["recruiter", "delivery_head"]}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         {/* Breadcrumb navigation */}
         <div className="flex items-center gap-2 text-sm text-slate-500 mb-6">
@@ -360,7 +390,9 @@ export default function RankedCandidatesPage() {
                 <div>
                   <div className="flex items-center gap-2">
                     <h2 className="text-xl font-bold text-slate-900">
-                      {selectedItem.candidate.name}
+                      {selectedItem.candidate.full_name ||
+                        selectedItem.candidate.name ||
+                        "Candidate Profile"}
                     </h2>
                     <ScoreBadge score={selectedItem.ai_score ?? selectedItem.candidate.ai_score} size="md" />
                   </div>
@@ -443,52 +475,129 @@ export default function RankedCandidatesPage() {
                     AI Scoring Evidence & Quotes
                   </h3>
 
-                  {selectedItem.score_evidence || selectedItem.candidate.score_evidence ? (
-                    <div className="space-y-3">
-                      {Object.entries(
-                        selectedItem.score_evidence ||
-                          selectedItem.candidate.score_evidence ||
-                          {}
-                      ).map(([criterion, data]: [string, any], idx: number) => {
-                        const quotes: string[] = [];
-                        if (typeof data === "string") quotes.push(data);
-                        else if (Array.isArray(data?.evidence_lines)) quotes.push(...data.evidence_lines);
-                        else if (typeof data?.evidence_lines === "string") quotes.push(data.evidence_lines);
-                        else if (data?.reasoning) quotes.push(data.reasoning);
+                  {(() => {
+                    const criteriaList = Array.isArray(selectedItem.criteria_scores)
+                      ? selectedItem.criteria_scores
+                      : Array.isArray((selectedItem.candidate as any)?.criteria_scores)
+                      ? (selectedItem.candidate as any).criteria_scores
+                      : null;
 
-                        return (
-                          <div
-                            key={idx}
-                            className="p-3.5 rounded-lg border border-slate-200 bg-white space-y-2"
-                          >
-                            <div className="flex items-center justify-between">
-                              <span className="font-semibold text-xs text-slate-800">
-                                {criterion}
-                              </span>
-                              {data?.score !== undefined && (
-                                <Badge variant="info" size="sm">
-                                  Score: {data.score}
-                                </Badge>
-                              )}
-                            </div>
-
-                            {quotes.map((q, qIdx) => (
+                    if (criteriaList && criteriaList.length > 0) {
+                      return (
+                        <div className="space-y-3">
+                          {criteriaList.map((crit: any, idx: number) => {
+                            const quotes: string[] = crit.evidence_quotes || crit.evidence_lines || [];
+                            const scoreVal =
+                              typeof crit.score === "number"
+                                ? Math.round(crit.score * 100)
+                                : null;
+                            return (
                               <div
-                                key={qIdx}
-                                className="pl-3 border-l-2 border-blue-600 italic text-xs text-slate-600 bg-slate-50/70 py-1.5 pr-2 rounded-r"
+                                key={idx}
+                                className="p-3.5 rounded-lg border border-slate-200 bg-white space-y-2"
                               >
-                                &ldquo;{q}&rdquo;
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-semibold text-xs text-slate-800">
+                                      {crit.criterion_name || crit.name}
+                                    </span>
+                                    {crit.matched && (
+                                      <span className="text-[10px] bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded font-medium">
+                                        Matched
+                                      </span>
+                                    )}
+                                  </div>
+                                  {scoreVal !== null && (
+                                    <Badge
+                                      variant={
+                                        scoreVal >= 70
+                                          ? "success"
+                                          : scoreVal >= 40
+                                          ? "warning"
+                                          : "danger"
+                                      }
+                                      size="sm"
+                                    >
+                                      {scoreVal}%
+                                    </Badge>
+                                  )}
+                                </div>
+
+                                {quotes.length > 0 ? (
+                                  quotes.map((q: string, qIdx: number) => (
+                                    <div
+                                      key={qIdx}
+                                      className="pl-3 border-l-2 border-blue-600 italic text-xs text-slate-600 bg-slate-50/70 py-1.5 pr-2 rounded-r"
+                                    >
+                                      &ldquo;{q}&rdquo;
+                                    </div>
+                                  ))
+                                ) : (
+                                  <div className="text-[11px] text-slate-400 italic">
+                                    No direct evidence lines cited in CV
+                                  </div>
+                                )}
                               </div>
-                            ))}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <p className="text-xs text-slate-400 italic">
-                      No detailed criteria breakdown recorded.
-                    </p>
-                  )}
+                            );
+                          })}
+                        </div>
+                      );
+                    }
+
+                    const evidenceObj =
+                      selectedItem.score_evidence ||
+                      selectedItem.candidate.score_evidence;
+                    if (evidenceObj && typeof evidenceObj === "object") {
+                      return (
+                        <div className="space-y-3">
+                          {Object.entries(evidenceObj).map(
+                            ([criterion, data]: [string, any], idx: number) => {
+                              const quotes: string[] = [];
+                              if (typeof data === "string") quotes.push(data);
+                              else if (Array.isArray(data?.evidence_lines))
+                                quotes.push(...data.evidence_lines);
+                              else if (typeof data?.evidence_lines === "string")
+                                quotes.push(data.evidence_lines);
+                              else if (data?.reasoning) quotes.push(data.reasoning);
+
+                              return (
+                                <div
+                                  key={idx}
+                                  className="p-3.5 rounded-lg border border-slate-200 bg-white space-y-2"
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <span className="font-semibold text-xs text-slate-800">
+                                      {criterion}
+                                    </span>
+                                    {data?.score !== undefined && (
+                                      <Badge variant="info" size="sm">
+                                        Score: {data.score}
+                                      </Badge>
+                                    )}
+                                  </div>
+
+                                  {quotes.map((q, qIdx) => (
+                                    <div
+                                      key={qIdx}
+                                      className="pl-3 border-l-2 border-blue-600 italic text-xs text-slate-600 bg-slate-50/70 py-1.5 pr-2 rounded-r"
+                                    >
+                                      &ldquo;{q}&rdquo;
+                                    </div>
+                                  ))}
+                                </div>
+                              );
+                            }
+                          )}
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <p className="text-xs text-slate-400 italic">
+                        No detailed criteria breakdown recorded.
+                      </p>
+                    );
+                  })()}
                 </div>
               </div>
 

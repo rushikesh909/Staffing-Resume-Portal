@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { AuthGuard } from "@/components/AuthGuard";
+import { useAuth } from "@/hooks/useAuth";
 import { useRequisitions, useClients } from "@/hooks/useRequisitions";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -20,14 +21,19 @@ import {
   BarChart3,
   AlertTriangle,
   RefreshCw,
+  ShieldCheck,
+  Eye,
 } from "lucide-react";
 
 export default function DashboardPage() {
+  const { user } = useAuth();
   const { data: requisitions, isLoading, isError, error, refetch } = useRequisitions();
   const { data: clients } = useClients();
 
+  const isDeliveryHead = user?.role === "delivery_head";
+
   const clientMap = React.useMemo(() => {
-    const map = new Map<number, string>();
+    const map = new Map<string | number, string>();
     clients?.forEach((c) => map.set(c.id, c.name));
     return map;
   }, [clients]);
@@ -42,16 +48,27 @@ export default function DashboardPage() {
     requisitions?.filter((r) => r.status === "active").length || 0;
 
   return (
-    <AuthGuard allowedRoles={["recruiter"]}>
+    <AuthGuard allowedRoles={["recruiter", "delivery_head"]}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-slate-200">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-              Recruiter Dashboard
-            </h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+                {isDeliveryHead
+                  ? "Delivery Head Oversight Dashboard"
+                  : "Recruiter Dashboard"}
+              </h1>
+              {isDeliveryHead && (
+                <Badge variant="warning" size="sm">
+                  Executive Oversight
+                </Badge>
+              )}
+            </div>
             <p className="mt-1 text-sm text-slate-500">
-              Manage requisitions, AI scorecards, and candidate pipelines.
+              {isDeliveryHead
+                ? "Monitor cross-firm recruitment operations, AI scoring fairness, and DPDP compliance."
+                : "Manage requisitions, AI scorecards, and candidate pipelines."}
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -62,6 +79,31 @@ export default function DashboardPage() {
             </Link>
           </div>
         </div>
+
+        {/* Delivery Head Executive Banner */}
+        {isDeliveryHead && (
+          <div className="mt-6 p-4 rounded-xl bg-blue-50/70 border border-blue-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-lg bg-blue-600 text-white flex items-center justify-center flex-shrink-0 mt-0.5">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-slate-900">
+                  AI Fairness & Blind Screening Active
+                </h3>
+                <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">
+                  Candidate names, gender markers, age, and marital status are stripped from raw CV text before scoring input. No candidate is auto-rejected; recruiters must review profiles before client submission.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4 text-xs font-medium text-slate-700 bg-white px-3.5 py-2 rounded-lg border border-blue-100 flex-shrink-0">
+              <div>
+                <span className="text-slate-400 block text-[10px] uppercase">Compliance</span>
+                <span className="text-emerald-700 font-semibold">DPDP Act 2023 Logged</span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Metrics Overview Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mt-6">

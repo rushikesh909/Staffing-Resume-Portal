@@ -33,7 +33,7 @@ export default function ClientPortalPage() {
     refetch: refetchReqs,
   } = useClientRequisitions();
 
-  const [selectedReqId, setSelectedReqId] = useState<number | null>(null);
+  const [selectedReqId, setSelectedReqId] = useState<string | number | null>(null);
 
   // Active requisition ID
   const activeReqId =
@@ -45,29 +45,28 @@ export default function ClientPortalPage() {
     isError: subsError,
     error: subError,
     refetch: refetchSubs,
-  } = useClientSubmissions(activeReqId ?? 0);
+  } = useClientSubmissions(activeReqId ?? "");
 
   const decisionMutation = useSubmitClientDecision(activeReqId ?? undefined);
 
   // Decision Modal State
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
-    submissionId: number;
+    submissionId: string | number;
     candidateName: string;
     decisionType: ClientDecision | null;
   }>({
     isOpen: false,
-    submissionId: 0,
+    submissionId: "",
     candidateName: "",
     decisionType: null,
   });
 
   const handleOpenDecision = (
-    subId: number,
+    subId: string | number,
     candidateName: string,
     decisionType: ClientDecision
   ) => {
-    // If shortlisted directly, we can either submit immediately or show confirmation
     setModalState({
       isOpen: true,
       submissionId: subId,
@@ -82,7 +81,7 @@ export default function ClientPortalPage() {
     proposed_slot?: string;
   }) => {
     await decisionMutation.mutateAsync({
-      submissionId: modalState.submissionId,
+      submissionId: modalState.submissionId as any,
       data,
     });
   };
@@ -93,30 +92,41 @@ export default function ClientPortalPage() {
   const candidateSubmissions = React.useMemo(() => {
     if (!submissions || !Array.isArray(submissions)) return [];
 
-    return submissions.map((item: any) => {
-      // Could be CandidatePortalOut or {submission, candidate}
-      if (item.candidate) {
-        return {
-          submissionId: item.submission?.id || item.id,
-          candidate: item.candidate,
-          ai_score: item.ai_score ?? item.candidate.ai_score,
-          score_evidence: item.score_evidence ?? item.candidate.score_evidence,
-          pipeline_stage: item.submission?.pipeline_stage || item.candidate.pipeline_stage,
-          client_decision: item.submission?.client_decision || item.client_decision,
-        };
-      } else {
-        return {
-          submissionId: item.id,
-          candidate: {
-            ...item,
-            name: item.name || `Candidate #${item.id}`,
-          } as Candidate,
-          ai_score: item.ai_score,
-          score_evidence: item.score_evidence,
-          pipeline_stage: item.pipeline_stage,
-          client_decision: item.client_decision,
-        };
-      }
+    return submissions.map((item: any, idx: number) => {
+      const cand = item.candidate || item;
+      const candName = cand.full_name || cand.name || `Candidate #${idx + 1}`;
+      const subId = item.id || item.submission_id || item.submission?.id || cand.id;
+      const stage =
+        item.pipeline_stage ||
+        item.submission?.pipeline_stage ||
+        cand.pipeline_stage ||
+        "client_reviewed";
+      const decision =
+        item.client_decision ||
+        item.submission?.client_decision ||
+        cand.client_decision;
+
+      const normalizedCandidate: Candidate = {
+        ...cand,
+        id: cand.id || subId,
+        name: candName,
+        full_name: candName,
+        ai_score: item.ai_score ?? cand.ai_score,
+        score_evidence: item.score_evidence ?? cand.score_evidence,
+        criteria_scores: item.criteria_scores ?? cand.criteria_scores,
+        pipeline_stage: stage,
+        client_decision: decision,
+      };
+
+      return {
+        submissionId: subId,
+        candidate: normalizedCandidate,
+        ai_score: item.ai_score ?? cand.ai_score,
+        score_evidence: item.score_evidence ?? cand.score_evidence,
+        criteria_scores: item.criteria_scores ?? cand.criteria_scores,
+        pipeline_stage: stage,
+        client_decision: decision,
+      };
     });
   }, [submissions]);
 
@@ -280,7 +290,7 @@ export default function ClientPortalPage() {
                   onDecision={(decisionType) =>
                     handleOpenDecision(
                       item.submissionId,
-                      item.candidate.name,
+                      item.candidate.name || item.candidate.full_name || "Candidate",
                       decisionType
                     )
                   }

@@ -23,7 +23,13 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({ children, allowedRoles }) 
       return;
     }
 
-    if (allowedRoles && allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
+    const isRoleAllowed =
+      !allowedRoles ||
+      allowedRoles.length === 0 ||
+      allowedRoles.includes(user.role) ||
+      (user.role === "delivery_head" && allowedRoles.includes("recruiter"));
+
+    if (!isRoleAllowed) {
       if (user.role === "client_hiring_manager") {
         router.push("/client/portal");
       } else {
@@ -47,7 +53,13 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({ children, allowedRoles }) 
     return null;
   }
 
-  if (allowedRoles && allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
+  const isRoleAllowed =
+    !allowedRoles ||
+    allowedRoles.length === 0 ||
+    allowedRoles.includes(user.role) ||
+    (user.role === "delivery_head" && allowedRoles.includes("recruiter"));
+
+  if (!isRoleAllowed) {
     return null;
   }
 

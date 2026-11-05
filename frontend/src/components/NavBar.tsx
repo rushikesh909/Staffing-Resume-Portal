@@ -24,8 +24,10 @@ export const NavBar: React.FC = () => {
   if (!user) return null;
 
   const isRecruiter = user.role === "recruiter";
+  const isDeliveryHead = user.role === "delivery_head";
+  const isInternal = isRecruiter || isDeliveryHead;
 
-  const recruiterNav = [
+  const internalNav = [
     { label: "Dashboard", href: "/dashboard", icon: Layers },
     { label: "New Requisition", href: "/requisitions/new", icon: PlusCircle },
   ];
@@ -34,7 +36,7 @@ export const NavBar: React.FC = () => {
     { label: "Candidate Review", href: "/client/portal", icon: Briefcase },
   ];
 
-  const navLinks = isRecruiter ? recruiterNav : clientNav;
+  const navLinks = isInternal ? internalNav : clientNav;
 
   const isActive = (href: string) => {
     if (href === "/dashboard") return pathname === "/dashboard";
@@ -48,7 +50,7 @@ export const NavBar: React.FC = () => {
           {/* Logo & Main Nav */}
           <div className="flex items-center gap-8">
             <Link
-              href={isRecruiter ? "/dashboard" : "/client/portal"}
+              href={isInternal ? "/dashboard" : "/client/portal"}
               className="flex items-center gap-2 font-bold text-slate-900 tracking-tight text-lg"
             >
               <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-semibold">
@@ -91,8 +93,17 @@ export const NavBar: React.FC = () => {
                   {user.email}
                 </div>
                 <div className="mt-0.5">
-                  <Badge variant={isRecruiter ? "info" : "success"} size="sm">
-                    {isRecruiter ? "Recruiter" : "Client"}
+                  <Badge
+                    variant={
+                      isDeliveryHead ? "warning" : isRecruiter ? "info" : "success"
+                    }
+                    size="sm"
+                  >
+                    {isDeliveryHead
+                      ? "Delivery Head"
+                      : isRecruiter
+                      ? "Recruiter"
+                      : "Client"}
                   </Badge>
                 </div>
               </div>
@@ -132,8 +143,17 @@ export const NavBar: React.FC = () => {
           <div className="py-2 border-b border-slate-100 mb-2">
             <div className="text-sm font-medium text-slate-800">{user.email}</div>
             <div className="mt-1">
-              <Badge variant={isRecruiter ? "info" : "success"} size="sm">
-                {isRecruiter ? "Recruiter" : "Client Portal"}
+              <Badge
+                variant={
+                  isDeliveryHead ? "warning" : isRecruiter ? "info" : "success"
+                }
+                size="sm"
+              >
+                {isDeliveryHead
+                  ? "Delivery Head"
+                  : isRecruiter
+                  ? "Recruiter"
+                  : "Client Portal"}
               </Badge>
             </div>
           </div>
