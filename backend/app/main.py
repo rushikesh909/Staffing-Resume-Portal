@@ -39,6 +39,12 @@ app.include_router(submissions_router.router)
 app.include_router(submissions_router.client_router)
 app.include_router(pipeline_router.router)
 
+from fastapi.responses import RedirectResponse
+
+@app.get("/", include_in_schema=False)
+async def root():
+    return RedirectResponse(url="/docs")
+
 @app.get("/health")
 async def health():
     return {"status": "ok"}
