@@ -68,7 +68,7 @@ export default function LoginPage() {
     <div className="flex-1 flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
-          <div className="mx-auto w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center text-white text-xl font-bold shadow-sm">
+          <div className="mx-auto w-12 h-12 rounded-xl bg-red-600 flex items-center justify-center text-white text-xl font-bold shadow-md shadow-red-600/20">
             S
           </div>
           <h1 className="mt-4 text-2xl font-bold tracking-tight text-slate-900">
@@ -124,7 +124,7 @@ export default function LoginPage() {
                   type="checkbox"
                   checked={rememberEmail}
                   onChange={(e) => setRememberEmail(e.target.checked)}
-                  className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4"
+                  className="rounded border-slate-300 text-red-600 focus:ring-red-500 w-4 h-4"
                 />
                 <span>Remember my email</span>
               </label>

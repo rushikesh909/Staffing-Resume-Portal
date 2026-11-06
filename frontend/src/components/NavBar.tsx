@@ -53,10 +53,10 @@ export const NavBar: React.FC = () => {
               href={isInternal ? "/dashboard" : "/client/portal"}
               className="flex items-center gap-2 font-bold text-slate-900 tracking-tight text-lg"
             >
-              <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-semibold">
+              <div className="w-8 h-8 rounded-lg bg-red-600 flex items-center justify-center text-white font-semibold shadow-sm">
                 S
               </div>
-              <span>Staffing<span className="text-blue-600">AI</span></span>
+              <span>Staffing<span className="text-red-600">AI</span></span>
             </Link>
 
             {/* Desktop Navigation */}
@@ -70,7 +70,7 @@ export const NavBar: React.FC = () => {
                     href={item.href}
                     className={`inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors gap-2 ${
                       active
-                        ? "bg-blue-50 text-blue-700"
+                        ? "bg-red-50 text-red-700 font-semibold"
                         : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                   >
@@ -168,7 +168,7 @@ export const NavBar: React.FC = () => {
                 onClick={() => setMobileMenuOpen(false)}
                 className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium ${
                   active
-                    ? "bg-blue-50 text-blue-700"
+                    ? "bg-red-50 text-red-700 font-semibold"
                     : "text-slate-600 hover:bg-slate-50"
                 }`}
               >

@@ -135,7 +135,7 @@ export default function ClientPortalPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         {/* Header */}
         <div className="pb-6 border-b border-slate-200">
-          <div className="flex items-center gap-2 text-blue-600 text-xs font-semibold uppercase tracking-wider mb-1">
+          <div className="flex items-center gap-2 text-red-600 text-xs font-semibold uppercase tracking-wider mb-1">
             <Building2 className="w-4 h-4" />
             <span>Client Hiring Portal</span>
           </div>
@@ -181,7 +181,7 @@ export default function ClientPortalPage() {
                   onClick={() => setSelectedReqId(req.id)}
                   className={`px-4 py-2 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap flex items-center gap-2 ${
                     isSelected
-                      ? "bg-blue-600 text-white shadow-sm"
+                      ? "bg-red-600 text-white shadow-sm"
                       : "bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-slate-200"
                   }`}
                 >
@@ -268,7 +268,7 @@ export default function ClientPortalPage() {
             <EmptyState
               title="No candidates submitted to review yet"
               description="Your staffing recruiter is currently sourcing and screening candidates against the rubric. When profiles are submitted, they will appear here for review."
-              icon={<Users className="w-6 h-6 text-blue-600" />}
+              icon={<Users className="w-6 h-6 text-red-600" />}
             />
           )}
 

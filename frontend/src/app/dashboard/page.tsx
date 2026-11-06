@@ -45,7 +45,7 @@ export default function DashboardPage() {
     0
   ) || 0;
   const activeRequisitions =
-    requisitions?.filter((r) => r.status === "active").length || 0;
+    requisitions?.filter((r) => r.status === "open" || r.status === "active").length || 0;
 
   return (
     <AuthGuard allowedRoles={["recruiter", "delivery_head"]}>
@@ -82,9 +82,9 @@ export default function DashboardPage() {
 
         {/* Delivery Head Executive Banner */}
         {isDeliveryHead && (
-          <div className="mt-6 p-4 rounded-xl bg-blue-50/70 border border-blue-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="mt-6 p-4 rounded-xl bg-red-50/70 border border-red-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-lg bg-blue-600 text-white flex items-center justify-center flex-shrink-0 mt-0.5">
+              <div className="w-9 h-9 rounded-lg bg-red-600 text-white flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm">
                 <ShieldCheck className="w-5 h-5" />
               </div>
               <div>
@@ -96,7 +96,7 @@ export default function DashboardPage() {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-4 text-xs font-medium text-slate-700 bg-white px-3.5 py-2 rounded-lg border border-blue-100 flex-shrink-0">
+            <div className="flex items-center gap-4 text-xs font-medium text-slate-700 bg-white px-3.5 py-2 rounded-lg border border-red-100 flex-shrink-0">
               <div>
                 <span className="text-slate-400 block text-[10px] uppercase">Compliance</span>
                 <span className="text-emerald-700 font-semibold">DPDP Act 2023 Logged</span>
@@ -112,7 +112,7 @@ export default function DashboardPage() {
               <span className="text-sm font-medium text-slate-500">
                 Open Requisitions
               </span>
-              <div className="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+              <div className="w-9 h-9 rounded-lg bg-red-50 text-red-600 flex items-center justify-center">
                 <Briefcase className="w-5 h-5" />
               </div>
             </div>
@@ -232,7 +232,7 @@ export default function DashboardPage() {
             <EmptyState
               title="No requisitions yet"
               description="Get started by creating your first job requisition. The AI will automatically extract a scoring rubric."
-              icon={<Briefcase className="w-6 h-6 text-blue-600" />}
+              icon={<Briefcase className="w-6 h-6 text-red-600" />}
               action={
                 <Link href="/requisitions/new">
                   <Button leftIcon={<PlusCircle className="w-4 h-4" />}>
@@ -263,7 +263,7 @@ export default function DashboardPage() {
                       <div className="flex items-center gap-3">
                         <Link
                           href={`/requisitions/${req.id}/candidates`}
-                          className="font-semibold text-slate-900 hover:text-blue-600 transition-colors text-base truncate"
+                          className="font-semibold text-slate-900 hover:text-red-600 transition-colors text-base truncate"
                         >
                           {req.title}
                         </Link>

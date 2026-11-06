@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from beanie import PydanticObjectId
 from app.config import settings
 from app.models import Candidate, Requisition, Submission, AuditLog, ConsentRecord, PipelineStage, ClientDecision, User
-from app.auth import recruiter_only
+from app.auth import recruiter_or_delivery
 from app.ai.cv_parser import extract_text_from_pdf, extract_text_from_docx, extract_profile_and_blind_text
 from app.ai.scorer import score_candidate
 
@@ -19,7 +19,7 @@ MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 async def bulk_upload_cvs(
     requisition_id: str = Form(...),
     files: List[UploadFile] = File(...),
-    current_user: User = Depends(recruiter_only)
+    current_user: User = Depends(recruiter_or_delivery)
 ):
     if len(files) > MAX_FILES:
         raise HTTPException(
@@ -202,7 +202,7 @@ async def bulk_upload_cvs(
 async def get_candidate_profile(
     id: str,
     requisition_id: Optional[str] = Query(None),
-    current_user: User = Depends(recruiter_only)
+    current_user: User = Depends(recruiter_or_delivery)
 ):
     candidate = None
     try:
@@ -259,7 +259,7 @@ class UpdateConsentRequest(BaseModel):
 @router.get("/{id}/consent")
 async def get_candidate_consent(
     id: str,
-    current_user: User = Depends(recruiter_only)
+    current_user: User = Depends(recruiter_or_delivery)
 ):
     candidate = None
     try:
@@ -279,7 +279,7 @@ async def get_candidate_consent(
 async def update_candidate_consent(
     id: str,
     body: UpdateConsentRequest,
-    current_user: User = Depends(recruiter_only)
+    current_user: User = Depends(recruiter_or_delivery)
 ):
     candidate = None
     try:
@@ -314,7 +314,7 @@ async def update_candidate_consent(
 @router.get("/{id}/audit-logs")
 async def get_candidate_audit_logs(
     id: str,
-    current_user: User = Depends(recruiter_only)
+    current_user: User = Depends(recruiter_or_delivery)
 ):
     candidate = None
     try:
@@ -346,7 +346,7 @@ async def get_candidate_audit_logs(
 @router.delete("/{id}")
 async def delete_candidate(
     id: str,
-    current_user: User = Depends(recruiter_only)
+    current_user: User = Depends(recruiter_or_delivery)
 ):
     candidate = None
     try:

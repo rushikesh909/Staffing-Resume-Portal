@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from beanie import PydanticObjectId
 from app.models import Requisition, ScorecardCriterion, Submission, Candidate, User
-from app.auth import recruiter_only
+from app.auth import recruiter_or_delivery
 from app.ai.jd_extractor import extract_scorecard_from_jd
 
 router = APIRouter(prefix="/requisitions", tags=["requisitions"])
@@ -30,26 +30,28 @@ async def _get_requisition_or_404(req_id: str) -> Requisition:
     return req
 
 @router.get("", response_model=List[dict])
-async def list_requisitions(current_user: User = Depends(recruiter_only)):
+async def list_requisitions(current_user: User = Depends(recruiter_or_delivery)):
     reqs = await Requisition.find_all().sort("-created_at").to_list()
-    return [
-        {
+    results = []
+    for r in reqs:
+        count = await Submission.find(Submission.requisition_id == str(r.id)).count()
+        results.append({
             "id": str(r.id),
             "title": r.title,
             "client_id": r.client_id,
             "status": r.status,
             "scorecard_count": len(r.scorecard),
+            "candidates_count": count,
             "created_by": r.created_by,
             "created_at": r.created_at,
             "updated_at": r.updated_at,
-        }
-        for r in reqs
-    ]
+        })
+    return results
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 async def create_requisition(
     body: CreateRequisitionRequest,
-    current_user: User = Depends(recruiter_only)
+    current_user: User = Depends(recruiter_or_delivery)
 ):
     scorecard = extract_scorecard_from_jd(body.jd_text)
     req = Requisition(
@@ -76,7 +78,7 @@ async def create_requisition(
     }
 
 @router.get("/{id}")
-async def get_requisition(id: str, current_user: User = Depends(recruiter_only)):
+async def get_requisition(id: str, current_user: User = Depends(recruiter_or_delivery)):
     req = await _get_requisition_or_404(id)
     return {
         "id": str(req.id),
@@ -94,7 +96,7 @@ async def get_requisition(id: str, current_user: User = Depends(recruiter_only))
 async def update_scorecard(
     id: str,
     body: UpdateScorecardRequest,
-    current_user: User = Depends(recruiter_only)
+    current_user: User = Depends(recruiter_or_delivery)
 ):
     req = await _get_requisition_or_404(id)
     req.scorecard = body.scorecard
@@ -109,7 +111,7 @@ async def update_scorecard(
 @router.get("/{id}/ranked")
 async def get_ranked_candidates(
     id: str,
-    current_user: User = Depends(recruiter_only)
+    current_user: User = Depends(recruiter_or_delivery)
 ):
     req = await _get_requisition_or_404(id)
     submissions = await Submission.find(

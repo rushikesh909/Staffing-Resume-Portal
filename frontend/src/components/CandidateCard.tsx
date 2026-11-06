@@ -100,7 +100,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({
     stage === "joined";
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 hover:shadow-md transition flex flex-col justify-between">
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 hover:shadow-md transition flex flex-col justify-between overflow-hidden max-w-full">
       <div>
         {/* Top Header: Candidate Name, Role & Stage/Decision Badge */}
         <div className="flex items-start justify-between gap-3">
@@ -240,7 +240,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({
                 <button
                   type="button"
                   onClick={() => onDecision?.("interview_proposed")}
-                  className="text-xs text-blue-600 hover:underline"
+                  className="text-xs text-red-600 hover:underline"
                 >
                   Change decision
                 </button>

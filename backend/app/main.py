@@ -9,6 +9,7 @@ from app.routers import requisitions as requisitions_router
 from app.routers import candidates as candidates_router
 from app.routers import submissions as submissions_router
 from app.routers import pipeline as pipeline_router
+from app.routers import clients as clients_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -38,6 +39,7 @@ app.include_router(candidates_router.router)
 app.include_router(submissions_router.router)
 app.include_router(submissions_router.client_router)
 app.include_router(pipeline_router.router)
+app.include_router(clients_router.router)
 
 from fastapi.responses import RedirectResponse
 

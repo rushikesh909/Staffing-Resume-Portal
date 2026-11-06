@@ -107,7 +107,7 @@ export default function PipelinePage() {
             {requisition?.title || "Requisition"}
           </span>
           <span>/</span>
-          <span className="text-blue-600 font-medium">Pipeline Board</span>
+          <span className="text-red-600 font-medium">Pipeline Board</span>
         </div>
 
         {/* Requisition Header & Context */}
@@ -163,7 +163,7 @@ export default function PipelinePage() {
             </Link>
             <Link
               href={`/requisitions/${id}/pipeline`}
-              className="px-3.5 py-2 text-xs font-semibold rounded-lg bg-blue-50 text-blue-700 flex items-center gap-1.5"
+              className="px-3.5 py-2 text-xs font-semibold rounded-lg bg-red-50 text-red-700 flex items-center gap-1.5"
             >
               <Kanban className="w-3.5 h-3.5" />
               <span>Pipeline View</span>

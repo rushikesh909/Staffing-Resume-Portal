@@ -196,7 +196,7 @@ export default function ScorecardPage() {
             {requisition?.title || "Requisition"}
           </span>
           <span>/</span>
-          <span className="text-blue-600 font-medium">Scorecard</span>
+          <span className="text-red-600 font-medium">Scorecard</span>
         </div>
 
         {/* Header with Title & Action Tabs */}
@@ -231,7 +231,7 @@ export default function ScorecardPage() {
           <div className="flex items-center gap-1 border-t border-slate-100 mt-6 pt-3 overflow-x-auto">
             <Link
               href={`/requisitions/${id}/scorecard`}
-              className="px-3.5 py-2 text-xs font-semibold rounded-lg bg-blue-50 text-blue-700 flex items-center gap-1.5"
+              className="px-3.5 py-2 text-xs font-semibold rounded-lg bg-red-50 text-red-700 flex items-center gap-1.5"
             >
               <ListFilter className="w-3.5 h-3.5" />
               <span>Scorecard Editor</span>
@@ -265,7 +265,7 @@ export default function ScorecardPage() {
           <div className="flex items-center justify-between pb-4 border-b border-slate-100">
             <div>
               <h2 className="text-base font-semibold text-slate-900 flex items-center gap-2">
-                <Sliders className="w-4 h-4 text-blue-600" />
+                <Sliders className="w-4 h-4 text-red-600" />
                 <span>Evaluation Criteria ({criteria.length})</span>
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">

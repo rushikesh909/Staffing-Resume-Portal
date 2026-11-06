@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from beanie import PydanticObjectId
 from app.models import Submission, Candidate, Requisition, PipelineStage, ClientDecision, User, UserRole
-from app.auth import get_current_user, recruiter_only, client_only, get_client_scoped_submission
+from app.auth import get_current_user, recruiter_only, recruiter_or_delivery, client_only, get_client_scoped_submission
 
 router = APIRouter(prefix="/submissions", tags=["submissions"])
 client_router = APIRouter(prefix="/client", tags=["client"])
@@ -92,7 +92,7 @@ async def get_submission(
 async def update_pipeline_stage(
     id: str,
     body: UpdateStageRequest,
-    current_user: User = Depends(recruiter_only)
+    current_user: User = Depends(recruiter_or_delivery)
 ):
     sub = await _get_submission_or_404(id)
     sub.pipeline_stage = body.stage
@@ -107,7 +107,7 @@ async def update_pipeline_stage(
 @router.post("/{id}/submit-to-client")
 async def submit_to_client(
     id: str,
-    current_user: User = Depends(recruiter_only)
+    current_user: User = Depends(recruiter_or_delivery)
 ):
     sub = await _get_submission_or_404(id)
     if not sub.recruiter_viewed:

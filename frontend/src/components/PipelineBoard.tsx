@@ -89,7 +89,7 @@ export const PipelineBoard: React.FC<PipelineBoardProps> = ({
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
-                          <h4 className="text-xs font-bold text-slate-900 group-hover:text-blue-600 transition truncate">
+                          <h4 className="text-xs font-bold text-slate-900 group-hover:text-red-600 transition truncate">
                             {candName}
                           </h4>
                           <p className="text-[11px] text-slate-500 truncate mt-0.5">
@@ -114,7 +114,7 @@ export const PipelineBoard: React.FC<PipelineBoardProps> = ({
                               e.stopPropagation();
                               onMoveStage(item.submissionId, nextStage);
                             }}
-                            className="inline-flex items-center gap-0.5 text-[11px] font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-0.5 rounded transition disabled:opacity-50"
+                            className="inline-flex items-center gap-0.5 text-[11px] font-semibold text-red-600 hover:text-red-800 bg-red-50 px-2 py-0.5 rounded transition disabled:opacity-50"
                             title={`Advance to ${nextStage}`}
                           >
                             <span>Advance</span>

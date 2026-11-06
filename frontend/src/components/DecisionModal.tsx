@@ -81,7 +81,7 @@ export const DecisionModal: React.FC<DecisionModalProps> = ({
         return {
           title: "Propose Interview Slot",
           description: `Select your preferred interview time for ${candidateName}. Contact details will be unmasked.`,
-          icon: <Calendar className="w-5 h-5 text-blue-600" />,
+          icon: <Calendar className="w-5 h-5 text-red-600" />,
           buttonText: "Send Interview Slot",
           variant: "primary" as const,
         };

@@ -186,7 +186,7 @@ export default function RankedCandidatesPage() {
             {requisition?.title || "Requisition"}
           </span>
           <span>/</span>
-          <span className="text-blue-600 font-medium">Ranked Candidates</span>
+          <span className="text-red-600 font-medium">Ranked Candidates</span>
         </div>
 
         {/* Requisition Header & Context */}
@@ -235,7 +235,7 @@ export default function RankedCandidatesPage() {
             </Link>
             <Link
               href={`/requisitions/${id}/candidates`}
-              className="px-3.5 py-2 text-xs font-semibold rounded-lg bg-blue-50 text-blue-700 flex items-center gap-1.5"
+              className="px-3.5 py-2 text-xs font-semibold rounded-lg bg-red-50 text-red-700 flex items-center gap-1.5"
             >
               <Users className="w-3.5 h-3.5" />
               <span>Ranked Candidates</span>

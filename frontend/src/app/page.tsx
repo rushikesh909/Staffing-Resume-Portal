@@ -24,7 +24,7 @@ export default function HomePage() {
   return (
     <div className="flex-1 flex items-center justify-center p-6">
       <div className="flex flex-col items-center gap-3">
-        <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+        <Loader2 className="w-8 h-8 text-red-600 animate-spin" />
         <p className="text-sm text-slate-500 font-medium">Redirecting to your workspace...</p>
       </div>
     </div>

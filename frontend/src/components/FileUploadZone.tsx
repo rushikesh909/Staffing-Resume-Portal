@@ -71,8 +71,8 @@ export const FileUploadZone: React.FC<FileUploadZoneProps> = ({
         disabled
           ? "opacity-50 cursor-not-allowed border-slate-200 bg-slate-50"
           : isDragOver
-          ? "border-blue-500 bg-blue-50/40"
-          : "border-slate-300 hover:border-blue-400 bg-slate-50/50 hover:bg-slate-50"
+          ? "border-red-500 bg-red-50/40"
+          : "border-slate-300 hover:border-red-400 bg-slate-50/50 hover:bg-slate-50"
       }`}
     >
       <input
@@ -84,7 +84,7 @@ export const FileUploadZone: React.FC<FileUploadZoneProps> = ({
         onChange={handleInputChange}
         disabled={disabled}
       />
-      <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-4">
+      <div className="w-12 h-12 rounded-full bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-4">
         <UploadCloud className="w-6 h-6" />
       </div>
       <h3 className="text-base font-semibold text-slate-800">
@@ -93,7 +93,7 @@ export const FileUploadZone: React.FC<FileUploadZoneProps> = ({
       <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
         Supports PDF, DOCX, and TXT files. Upload multiple resumes simultaneously for batch parsing and AI rubric scoring.
       </p>
-      <div className="mt-4 inline-flex items-center gap-2 text-xs font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+      <div className="mt-4 inline-flex items-center gap-2 text-xs font-medium text-red-700 bg-red-50 px-3 py-1 rounded-full border border-red-100">
         <Sparkles className="w-3.5 h-3.5" />
         <span>Instant OCR + AI Criteria Matching</span>
       </div>
@@ -111,7 +111,7 @@ export const FileStatusRow: React.FC<{
         return <Badge variant="neutral" size="sm">Queued</Badge>;
       case "uploading":
         return (
-          <span className="inline-flex items-center gap-1.5 text-xs text-blue-600 font-medium">
+          <span className="inline-flex items-center gap-1.5 text-xs text-red-600 font-medium">
             <Loader2 className="w-3.5 h-3.5 animate-spin" />
             Uploading ({item.progress}%)
           </span>

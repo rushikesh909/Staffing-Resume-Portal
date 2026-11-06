@@ -74,12 +74,12 @@ export const ScoreCard: React.FC<ScoreCardProps> = ({
           {displayedSnippets.map((item, idx) => (
             <div
               key={idx}
-              className="pl-2.5 border-l-2 border-blue-600 italic text-xs text-slate-500 leading-relaxed bg-slate-50/60 py-1 pr-2 rounded-r"
+              className="pl-2.5 border-l-2 border-red-600 italic text-xs text-slate-600 leading-relaxed bg-slate-50/60 py-1 pr-2 rounded-r break-words [overflow-wrap:anywhere] overflow-hidden"
             >
-              <span className="font-semibold text-slate-700 not-italic mr-1.5 text-[11px] uppercase tracking-wider">
+              <span className="font-semibold text-slate-800 not-italic mr-1.5 text-[11px] uppercase tracking-wider inline-block">
                 {item.criterion}:
               </span>
-              &ldquo;{item.quote}&rdquo;
+              <span className="break-words [overflow-wrap:anywhere]">&ldquo;{item.quote}&rdquo;</span>
             </div>
           ))}
         </div>

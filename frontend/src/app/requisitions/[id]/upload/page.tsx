@@ -141,7 +141,7 @@ export default function BulkUploadPage() {
             {requisition?.title || "Requisition"}
           </span>
           <span>/</span>
-          <span className="text-blue-600 font-medium">Bulk Upload</span>
+          <span className="text-red-600 font-medium">Bulk Upload</span>
         </div>
 
         {/* Requisition Context Banner */}
@@ -175,7 +175,7 @@ export default function BulkUploadPage() {
             </Link>
             <Link
               href={`/requisitions/${id}/upload`}
-              className="px-3.5 py-2 text-xs font-semibold rounded-lg bg-blue-50 text-blue-700 flex items-center gap-1.5"
+              className="px-3.5 py-2 text-xs font-semibold rounded-lg bg-red-50 text-red-700 flex items-center gap-1.5"
             >
               <UploadCloud className="w-3.5 h-3.5" />
               <span>Upload CVs</span>
@@ -216,13 +216,13 @@ export default function BulkUploadPage() {
                   <span>
                     Batch Progress: {processedCount} of {totalFiles} processed
                   </span>
-                  <span className="font-semibold text-blue-600">
+                  <span className="font-semibold text-red-600">
                     {overallProgress}%
                   </span>
                 </div>
                 <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-blue-600 transition-all duration-300 rounded-full"
+                    className="h-full bg-red-600 transition-all duration-300 rounded-full"
                     style={{ width: `${overallProgress}%` }}
                   />
                 </div>
