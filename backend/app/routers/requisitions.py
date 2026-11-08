@@ -157,3 +157,15 @@ async def get_ranked_candidates(
         })
 
     return results
+
+@router.delete("/{id}")
+async def delete_requisition(
+    id: str,
+    current_user: User = Depends(recruiter_or_delivery)
+):
+    req = await _get_requisition_or_404(id)
+    # Delete associated candidate submissions to prevent orphaned records
+    await Submission.find(Submission.requisition_id == str(req.id)).delete()
+    await req.delete()
+    return {"status": "deleted", "id": str(req.id)}
+

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { AuthGuard } from "@/components/AuthGuard";
 import {
@@ -15,6 +15,7 @@ import { ScoreBadge, Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { deleteRequisitionApi } from "@/lib/api";
 import {
   UploadCloud,
   ListFilter,
@@ -28,11 +29,27 @@ import {
   RefreshCw,
   AlertCircle,
   FileText,
+  Trash2,
 } from "lucide-react";
 
 export default function PipelinePage() {
   const params = useParams();
+  const router = useRouter();
   const id = params?.id as string;
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeleteRequisition = async () => {
+    if (window.confirm(`Are you sure you want to delete requisition "${requisition?.title}" and all its candidate submissions?`)) {
+      try {
+        setIsDeleting(true);
+        await deleteRequisitionApi(id);
+        router.push("/dashboard");
+      } catch (err: any) {
+        alert("Failed to delete requisition: " + (err?.response?.data?.detail || err.message));
+        setIsDeleting(false);
+      }
+    }
+  };
 
   const { data: requisition, isLoading: reqLoading } = useRequisition(id);
   const {
@@ -135,6 +152,16 @@ export default function PipelinePage() {
                   Upload CVs
                 </Button>
               </Link>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDeleteRequisition}
+                disabled={isDeleting}
+                className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 border-rose-200"
+                leftIcon={<Trash2 className="w-4 h-4 text-rose-500" />}
+              >
+                {isDeleting ? "Deleting..." : "Delete Requisition"}
+              </Button>
             </div>
           </div>
 

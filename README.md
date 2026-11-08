@@ -77,7 +77,7 @@ npm run dev
 
 ## Running Automated Tests
 
-### Backend Unit & Integration Tests (11 test suites)
+### Backend Unit & Integration Tests (12 test suites)
 ```bash
 cd backend
 python -m pytest tests/ -v
@@ -91,6 +91,7 @@ Verifies:
 - SHA-256 fingerprint deduplication
 - Client submission access isolation (404 boundary)
 - DPDP candidate deletion & audit logging
+- Requisition deletion (`DELETE /requisitions/{id}`) with cascade submission clean-up
 
 ### Frontend Component Tests
 ```bash

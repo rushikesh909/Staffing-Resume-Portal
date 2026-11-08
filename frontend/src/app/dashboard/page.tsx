@@ -23,12 +23,29 @@ import {
   RefreshCw,
   ShieldCheck,
   Eye,
+  Trash2,
 } from "lucide-react";
+import { deleteRequisitionApi } from "@/lib/api";
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const { data: requisitions, isLoading, isError, error, refetch } = useRequisitions();
   const { data: clients } = useClients();
+  const [deletingId, setDeletingId] = React.useState<string | number | null>(null);
+
+  const handleDeleteRequisition = async (id: string | number, title: string) => {
+    if (window.confirm(`Are you sure you want to delete requisition "${title}" and all its candidate submissions?`)) {
+      try {
+        setDeletingId(id);
+        await deleteRequisitionApi(id);
+        refetch();
+      } catch (err: any) {
+        alert("Failed to delete requisition: " + (err?.response?.data?.detail || err.message));
+      } finally {
+        setDeletingId(null);
+      }
+    }
+  };
 
   const isDeliveryHead = user?.role === "delivery_head";
 
@@ -315,6 +332,17 @@ export default function DashboardPage() {
                           Pipeline
                         </Button>
                       </Link>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeleteRequisition(req.id, req.title)}
+                        disabled={deletingId === req.id}
+                        className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 border-rose-200"
+                        leftIcon={<Trash2 className="w-3.5 h-3.5 text-rose-500" />}
+                      >
+                        {deletingId === req.id ? "Deleting..." : "Delete"}
+                      </Button>
                     </div>
                   </div>
                 );

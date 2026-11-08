@@ -366,10 +366,11 @@ The scoring function `score_candidate()` computes scores on a criterion-by-crite
 
 ### DPDP Act (Digital Personal Data Protection Act) Compliance
 1. **Explicit Purpose Limitation**: Every candidate document embeds a `ConsentRecord` recording consent timestamp and specific purpose (`purpose: "hiring"`).
-2. **Right to Erasure / Deletion Endpoint**: `DELETE /candidates/{id}` purges candidate profile data, associated submissions, and audit log entries from the primary database.
-3. **Immutable Audit Logging**: Every view of a candidate's profile records the viewer's ID, role, timestamp, and context in the `audit_logs` collection.
-4. **Blind Scoring**: Demographics, names, gender indicators, and contact channels are stripped before AI evaluation to ensure algorithmic fairness.
-5. **Contact Masking**: Client hiring managers cannot view phone numbers or email addresses until an interview is formally requested.
+2. **Right to Erasure / Candidate Deletion**: `DELETE /candidates/{id}` purges candidate profile data, associated submissions, and audit log entries from the primary database.
+3. **Requisition Deletion & Cascade Clean-up**: `DELETE /requisitions/{id}` removes job requisitions and automatically purges all linked candidate submissions to prevent orphaned data.
+4. **Immutable Audit Logging**: Every view of a candidate's profile records the viewer's ID, role, timestamp, and context in the `audit_logs` collection.
+5. **Blind Scoring**: Demographics, names, gender indicators, and contact channels are stripped before AI evaluation to ensure algorithmic fairness.
+6. **Contact Masking**: Client hiring managers cannot view phone numbers or email addresses until an interview is formally requested.
 
 ---
 

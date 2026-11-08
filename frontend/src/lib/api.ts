@@ -80,6 +80,11 @@ export async function getRequisitionApi(id: number | string): Promise<Requisitio
   return data;
 }
 
+export async function deleteRequisitionApi(id: number | string): Promise<{ status: string; id: string }> {
+  const { data } = await apiClient.delete(`/requisitions/${id}`);
+  return data;
+}
+
 export async function updateScorecardApi(
   id: number | string,
   scorecard: ScorecardData | Record<string, any>

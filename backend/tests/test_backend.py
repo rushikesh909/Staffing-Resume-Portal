@@ -431,3 +431,47 @@ async def test_candidate_deletion_dpdp():
         assert await Submission.find_one(Submission.candidate_id == str(cand.id)) is None
         assert await AuditLog.find_one(AuditLog.candidate_id == str(cand.id)) is None
 
+
+@pytest.mark.asyncio
+async def test_delete_requisition():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        recruiter = User(
+            email="rec_del_req@test.com",
+            hashed_password=hash_password("pw123"),
+            full_name="Recruiter Delete Req",
+            role=UserRole.recruiter
+        )
+        await recruiter.insert()
+
+        token = create_token(str(recruiter.id), UserRole.recruiter.value)
+        headers = {"Authorization": f"Bearer {token}"}
+
+        # Create a test requisition
+        req = Requisition(
+            title="Requisition To Delete",
+            client_id="test_client_id",
+            jd_text="Requirements: 3 years experience Python",
+            created_by=str(recruiter.id)
+        )
+        await req.insert()
+
+        # Create an associated submission
+        sub = Submission(
+            requisition_id=str(req.id),
+            candidate_id="cand_123",
+            client_id="test_client_id",
+            ai_score=80.0
+        )
+        await sub.insert()
+
+        # Delete the requisition
+        res = await ac.delete(f"/requisitions/{req.id}", headers=headers)
+        assert res.status_code == 200
+        assert res.json()["status"] == "deleted"
+
+        # Verify requisition and associated submissions are purged
+        assert await Requisition.get(req.id) is None
+        assert await Submission.find_one(Submission.requisition_id == str(req.id)) is None
+
+

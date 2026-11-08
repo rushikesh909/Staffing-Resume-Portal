@@ -9,6 +9,7 @@ import {
   useUpdateScorecard,
 } from "@/hooks/useRequisitions";
 import { ScorecardCriterionItem } from "@/lib/types";
+import { deleteRequisitionApi } from "@/lib/api";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
@@ -39,6 +40,20 @@ export default function ScorecardPage() {
   const [criteria, setCriteria] = useState<ScorecardCriterionItem[]>([]);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeleteRequisition = async () => {
+    if (window.confirm(`Are you sure you want to delete requisition "${requisition?.title}" and all its candidate submissions?`)) {
+      try {
+        setIsDeleting(true);
+        await deleteRequisitionApi(id);
+        router.push("/dashboard");
+      } catch (err: any) {
+        alert("Failed to delete requisition: " + (err?.response?.data?.detail || err.message));
+        setIsDeleting(false);
+      }
+    }
+  };
 
   // Normalize scorecard criteria on load
   useEffect(() => {
@@ -224,6 +239,15 @@ export default function ScorecardPage() {
                   Upload CVs
                 </Button>
               </Link>
+              <Button
+                variant="outline"
+                onClick={handleDeleteRequisition}
+                disabled={isDeleting}
+                className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 border-rose-200"
+                leftIcon={<Trash2 className="w-4 h-4 text-rose-500" />}
+              >
+                {isDeleting ? "Deleting..." : "Delete Requisition"}
+              </Button>
             </div>
           </div>
 
