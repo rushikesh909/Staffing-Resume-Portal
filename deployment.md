@@ -1,67 +1,49 @@
 # Deployment Guide
 
-## Local Development (Docker Compose)
+## Local Development (Standard Execution)
 
 ### Prerequisites
-- Docker Desktop 4.x+
-- Docker Compose v2+
+- Python 3.10+
+- Node.js 18+ & npm
+- MongoDB Community Server (running locally on port 27017)
 - Git
 
-### Steps
+### 1. Backend Setup (FastAPI)
 
-1. Clone the repository:
-   ```bash
-   git clone <GITHUB_REPO_URL>
-   cd staffing-resume-portal
-   ```
-
-2. Copy and configure environment variables:
-   ```bash
-   cp .env.example .env
-   # Edit .env and set SECRET_KEY to a random 32-byte hex string:
-   # openssl rand -hex 32
-   ```
-
-3. Start services:
-   ```bash
-   docker compose up --build
-   ```
-   This starts MongoDB 7, the FastAPI backend (port 8000), and Next.js frontend (port 3000).
-
-4. Run the seed script (in a new terminal):
-   ```bash
-   docker compose exec backend python scripts/seed.py
-   ```
-
-5. Open the app: http://localhost:3000
-
----
-
-## Local (without Docker)
-
-### Backend
 ```bash
 cd backend
 python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
+
+# Activate virtual environment:
+# On Windows:
+.venv\Scripts\activate
+# On Linux/macOS:
+source .venv/bin/activate
+
+# Install dependencies:
 pip install -r requirements.txt
-# Ensure MongoDB is running locally on port 27017
-cp ../.env.example ../.env  # edit as needed
+
+# Start backend server (runs on http://localhost:8000, docs at http://localhost:8000/docs):
 uvicorn app.main:app --reload --port 8000
 ```
 
-### Seed
+### 2. Database Seeding (Sample Data)
+
+In a separate terminal (with `.venv` activated in `backend/`):
 ```bash
-cd backend
 python scripts/seed.py
 ```
+*Seeds 2 corporate clients (TechCorp Solutions, FinServ India), 5 user accounts, 3 active requisitions, and 25 candidates including the required sample candidates (Ritika Bansal `CND-91022`, Arjun Rawat `CND-91047`, and Pooja Nair `CND-91088`).*
 
-### Frontend
+### 3. Frontend Setup (Next.js)
+
+In another terminal:
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
+*Frontend runs at: **http://localhost:3000***
 
 ---
 
