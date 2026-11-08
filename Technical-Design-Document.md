@@ -1,8 +1,20 @@
 # Technical Design Document
-## Staffing Firm AI Resume Screening Tool & Client Shortlist Portal
+## AI Resume Screening & Client Shortlist Portal (Company A, Noida)
 
-**GitHub Repository**: [Repository URL]  
-**Live App**: [Live App URL — TBD]
+**GitHub Repository**: `https://github.com/<your-username>/staffing-resume-portal`  
+**Live Application**: `https://staffing-resume-portal.vercel.app` (Backend: `https://staffing-resume-api.onrender.com`)
+
+---
+
+## Demo Reviewer Accounts
+
+| Role | Email | Password | Organization / Client | Scope |
+|---|---|---|---|---|
+| **Recruiter** | `recruiter@talentbridge.in` | `Recruiter@123` | TalentBridge Staffing | Create JDs, upload CVs, view AI scores with verbatim evidence, manage candidate pipeline. |
+| **Senior Recruiter** | `senior.recruiter@talentbridge.in` | `Recruiter@123` | TalentBridge Staffing | Agency-wide sourcing & screening permissions. |
+| **Client 1 (IT Services)** | `hiring@techcorp.in` | `Client@123` | **TechCorp Solutions** | Reviews shortlists for **Senior Java Developer** (includes Ritika Bansal & Pooja Nair); masked contacts until interview stage. |
+| **Client 2 (Banking)** | `hiring@finserv.in` | `Client@123` | **FinServ India** | Reviews shortlists for **KYC Analyst** (includes Arjun Rawat); strictly scoped to FinServ candidates. |
+| **Delivery Head** | `head@talentbridge.in` | `DeliveryHead@123` | TalentBridge Staffing | Executive oversight dashboard (`/delivery`), recruiter activity stats, and AI vs. recruiter alignment audit. |
 
 ---
 
@@ -311,9 +323,9 @@ The scoring function `score_candidate()` computes scores on a criterion-by-crite
 ## 5. UI & Design Decisions
 
 ### Design Language & System
-- **Color Palette**: Minimalist, professional enterprise theme:
-  - Neutral Base: Slate grays (`slate-900` text, `slate-500` secondary, `slate-100` backgrounds).
-  - Primary Accent: Deep royal blue (`#2563EB` / `blue-600`) for primary buttons and active indicators.
+- **Color Palette**: Executive Crimson & Slate design system:
+  - Neutral Base: Slate grays (`slate-900` headings, `slate-600` body, `slate-50` page backgrounds).
+  - Primary Accent: Deep crimson / ruby (`rose-600` / `#E11D48`) for actions, branding, and focused states, avoiding generic blue ATS styling.
   - Semantic Statuses: Emerald (`emerald-600`) for top matches (≥70%), Amber (`amber-500`) for moderate matches (40-69%), Rose (`rose-600`) for low matches (<40%).
 - **Typography**: Inter system font stack for clean legibility on data tables and cards.
 - **Mobile-First Client Portal**: The client review portal is fully responsive with card layouts designed for quick decision-making on smartphones.
