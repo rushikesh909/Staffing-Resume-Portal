@@ -112,7 +112,7 @@ npm test
 
 ## Submission Deliverables
 
-- `Technical-Design-Document.docx` — Complete design specification in Word format.
+- `Technical-Design-Document.docx` — Complete executive design document in Word (.docx) format with styled tables, metadata card, and system flows.
 - `Technical-Design-Document.md` — Full technical architecture, data model, and engineering decisions.
 - `deployment.md` — Step-by-step local runbook, production deployment guide, and environment variable references.
 - `submission.zip` — Packaged deliverables archive (<60 KB).
