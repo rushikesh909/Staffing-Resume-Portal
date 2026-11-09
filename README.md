@@ -8,8 +8,8 @@ This system replaces manual 3-minute-per-CV reading with instant, evidence-backe
 
 ## Live Links & Reviewer Logins
 
-- **Frontend App**: `https://staffing-resume-portal.vercel.app` (Local: `http://localhost:3000`)
-- **Backend API Docs**: `https://staffing-resume-api.onrender.com/docs` (Local: `http://localhost:8000/docs`)
+- **Frontend App**: `https://staffing-portal-app.embarko.app (Local: `http://localhost:3000`)
+- **Backend API Docs**: `https://staffing-portal-api.embarko.app/docs` (Local: `http://localhost:8000/docs`)
 
 ### Demo Accounts for Evaluators
 
