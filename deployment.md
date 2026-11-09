@@ -65,8 +65,8 @@ npx vitest run
 
 ## Live Links & Reviewer Logins
 
-- **Frontend App**:(Local: `http://localhost:3000`)
-- **Backend API Docs**:(Local: `http://localhost:8000/docs`)
+- **Frontend App**: `https://staffing-portal-app.embarko.app' (Local: `http://localhost:3000`)
+- **Backend API Docs**: `https://staffing-portal-api.embarko.app/docs` (Local: `http://localhost:8000/docs`)
 
 
 
